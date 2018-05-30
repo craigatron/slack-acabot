@@ -20,7 +20,6 @@ SCOPES = [
 creds = ServiceAccountCredentials.from_json_keyfile_name(
     'client_secret.json', SCOPES)
 
-client = gspread.authorize(creds)
 
 SPREADSHEET = os.environ.get('SPREADSHEET_ID')
 CHANNEL_ID = os.environ.get('CHANNEL_ID')
@@ -37,6 +36,7 @@ def is_valid(request):
 
 @app.route('/attendance', methods=['POST'])
 def attendance():
+    client = gspread.authorize(creds)
     logging.info('attendance request: %s', request.form)
     if not is_valid(request):
         print('invalid token ' + request.form['token'])
