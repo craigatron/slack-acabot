@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import re
@@ -17,8 +18,8 @@ SCOPES = [
     'https://www.googleapis.com/auth/drive'
 ]
 
-creds = ServiceAccountCredentials.from_json_keyfile_name(
-    'client_secret.json', SCOPES)
+creds = ServiceAccountCredentials.from_json_keyfile_dict(
+        json.loads(os.environ.get('CLIENT_SECRET')), SCOPES)
 
 
 SPREADSHEET = os.environ.get('SPREADSHEET_ID')
@@ -28,6 +29,8 @@ app = Flask(__name__)
 app.config['PROPAGATE_EXCEPTIONS'] = True
 
 SLACK_CLIENT = SlackClient(os.environ.get('SLACK_OAUTH_TOKEN'))
+
+logging.getLogger().setLevel(logging.INFO)
 
 
 def is_valid(request):
@@ -39,7 +42,7 @@ def attendance():
     client = gspread.authorize(creds)
     logging.info('attendance request: %s', request.form)
     if not is_valid(request):
-        print('invalid token ' + request.form['token'])
+        logging.warning('invalid token ' + request.form['token'])
         abort(400)
 
     sheet = client.open_by_key(SPREADSHEET).sheet1
