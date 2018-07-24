@@ -53,6 +53,8 @@ def attendance():
 
     if pieces[0] == 'help':
         return _get_help_text()
+    elif pieces[0] == 'report':
+        return _report_attendance(sheet, pieces[1])
 
     try:
         datetime.datetime.strptime(pieces[0], '%Y-%m-%d')
@@ -71,6 +73,25 @@ def attendance():
         return _get_attendance(date_cell, sheet)
 
     return _record_attendance(date_cell, sheet, pieces)
+
+
+def _report_attendance(sheet, date):
+    try:
+        datetime.datetime.strptime(date, '%Y-%m-%d')
+    except ValueError:
+        return jsonify(text='%s doesn\'t look like a date' % date)
+
+    try:
+        date_cell = sheet.find(date)
+        if not date_cell:
+            return jsonify(
+                text='%s not found in the spreadsheet :(' % pieces[0])
+    except gspread.exceptions.CellNotFound:
+        return jsonify(text='%s not found in the spreadsheet :(' % pieces[0])
+
+    return _get_attendance(date_cell, sheet).update(
+            {'response_type': 'in_channel'})
+
 
 
 def _get_user_attendances(username, sheet):
